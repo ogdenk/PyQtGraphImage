@@ -68,3 +68,20 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
 
         roi.sigRegionChanged.connect(update)
 
+
+
+        #Slider functionality
+
+        def updateBot():
+            min = (self.verticalSlider.sliderPosition())-(self.horizontalSlider.sliderPosition()/2)
+            max = (self.verticalSlider.sliderPosition())+(self.horizontalSlider.sliderPosition()/2)
+            img2.setLevels(min, max)
+
+        self.horizontalSlider.sliderMoved.connect(updateBot)
+
+        def updateTop():
+            min = (self.verticalSlider.sliderPosition())-(self.horizontalSlider.sliderPosition()/2)
+            max = (self.verticalSlider.sliderPosition())+(self.horizontalSlider.sliderPosition()/2)
+            img2.setLevels(min, max)
+
+        self.verticalSlider.sliderMoved.connect(updateTop)
