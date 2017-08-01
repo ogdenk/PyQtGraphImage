@@ -34,6 +34,7 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
         self.imv.setImage(ArrayDicom.T)
         self.imv.autoRange()
 
+
         #Creates the ROI
         roi = pqg.RectROI([250,250], [150,150])
         roi.setParentItem(self.imv.getView())
@@ -48,7 +49,8 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
         np.fliplr(ROIarray)
         out += "ROI array:\n" + ROIarray.__str__()
         img2.setImage(ROIarray.T, autoLevels=False, autoRange=False, scale=[0.5, 0.5])
-        img2.setLevels(ROIarray.min(),ROIarray.max())
+        img2.setLevels(ROIarray.min(), ROIarray.max())
+
 
         def update(roi):
             ROIarray = roi.getArrayRegion(ArrayDicom.T, self.imv.getImageItem())
@@ -62,6 +64,7 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
             updatetext += ROIarray.__str__() + "\nMean:\n" + ROIarray.mean().__str__() + "\nMax:\n" + ROIarray.max().__str__() + "\nMin:\n" + ROIarray.min().__str__()
             self.textBrowser.clear()
             self.textBrowser.setPlainText(out + updatetext)
+
 
         roi.sigRegionChanged.connect(update)
 
