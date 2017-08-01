@@ -34,7 +34,6 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
         self.imv.setImage(ArrayDicom.T)
         self.imv.autoRange()
 
-
         #Creates the ROI
         roi = pqg.RectROI([250,250], [150,150])
         roi.setParentItem(self.imv.getView())
