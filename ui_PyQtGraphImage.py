@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'PyQtGraphImage.ui'
 #
-# Created by: PyQt5 UI code generator 5.6
+# Created by: PyQt5 UI code generator 5.9
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -46,9 +46,14 @@ class Ui_MainWindow(object):
         self.verticalSlider.setMaximum(2000)
         self.verticalSlider.setOrientation(QtCore.Qt.Vertical)
         self.verticalSlider.setObjectName("verticalSlider")
+        self.horizontalScrollBar = QtWidgets.QScrollBar(self.centralwidget)
+        self.horizontalScrollBar.setGeometry(QtCore.QRect(60, 640, 511, 16))
+        self.horizontalScrollBar.setMaximum(100)
+        self.horizontalScrollBar.setOrientation(QtCore.Qt.Horizontal)
+        self.horizontalScrollBar.setObjectName("horizontalScrollBar")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1024, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1024, 22))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
