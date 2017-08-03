@@ -85,41 +85,41 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
 
         #ROI creation
         def resizeROI():
-            roi.setSize([self.spinBox.value(), self.spinBox.value()])
+            self.roi.setSize([self.spinBox.value(), self.spinBox.value()])
 
         self.spinBox.valueChanged.connect(resizeROI)
 
-        roi = pqg.RectROI([0,0], [self.spinBox.value(), self.spinBox.value()])
-        roiList = []
+        self.roi = pqg.RectROI([0,0], [self.spinBox.value(), self.spinBox.value()])
+        self.roiList = []
         self.ROIexists = False
         img2 = pqg.ImageView(self.graphicsView_2)
 
         def mainClick():
-            roi.setPos(pqg.SignalProxy())
+            self.roi.setPos(pqg.SignalProxy())
 
 
         #ROI buttons
         def createROI():
             self.ROIexists = True
             # Creates the ROI list
-            roi.setParentItem(self.imv.getView())
+            self.roi.setParentItem(self.imv.getView())
             # roi.setPos(100,100)
-            roi.sigRegionChanged.connect(update)
-            roi.setPen(200, 50, 0)
-            roi.setPos(150,150)
+            self.roi.sigRegionChanged.connect(update)
+            self.roi.setPen(200, 50, 0)
+            self.roi.setPos(150,150)
             for i in np.arange(0, nTime, 1):
-                roiList.append(roi.saveState())
+                self.roiList.append(self.roi.saveState())
             # Generates second image and output from ROI data
-            ROIarray = roi.getArrayRegion(finalArray[self.verticalScrollBar.sliderPosition()][:, :, self.horizontalScrollBar.sliderPosition()].T,self.imv.getImageItem())
+            ROIarray = self.roi.getArrayRegion(finalArray[self.verticalScrollBar.sliderPosition()][:, :, self.horizontalScrollBar.sliderPosition()].T,self.imv.getImageItem())
             np.fliplr(ROIarray)
 
         self.pushButton.clicked.connect(createROI)
 
         def clearROI():
-            roi.setParentItem(None)
-            roi.setPos(-10000, 0)
-            roi.setSize([self.spinBox.value(), self.spinBox.value()])
-            roiList.clear()
+            self.roi.setParentItem(None)
+            self.roi.setPos(-10000, 0)
+            self.roi.setSize([self.spinBox.value(), self.spinBox.value()])
+            self.roiList.clear()
             self.ROIexists = False
 
         self.pushButton_2.clicked.connect(clearROI)
@@ -137,6 +137,27 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
             self.textBrowser.clear()
             self.textBrowser.setPlainText(out + updatetext)
 
+        def collectMeans():
+            mean = 0
+            meanlst = []
+            if self.ROIexists:
+                update(self.roi)
+                preMove()
+                tempROI = self.roi
+                tempState = tempROI.saveState()
+                tempPlace = self.horizontalScrollBar.sliderPosition()
+                for i in np.arange(0, nTime, 1):
+                    self.imv.setImage(finalArray[self.verticalScrollBar.sliderPosition()][:, :, i].T, autoRange=False, autoLevels=False)
+                    self.roi.setState(self.roiList[i])
+                    mean += self.roi.getArrayRegion(finalArray[self.verticalScrollBar.sliderPosition()][:, :, i].T, self.imv.getImageItem()).mean()
+                    meanlst.append(self.roi.getArrayRegion(finalArray[self.verticalScrollBar.sliderPosition()][:, :, i].T, self.imv.getImageItem()).mean())
+                print(meanlst)
+                mean = mean/nTime
+                self.textBrowser_2.setText(mean.__str__())
+                self.roi.setState(tempState)
+                self.imv.setImage(finalArray[self.verticalScrollBar.sliderPosition()][:, :, tempPlace].T, autoRange=False,autoLevels=False)
+
+        self.pushButton_3.clicked.connect(collectMeans)
 
 
         #Slider for time
@@ -144,12 +165,12 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
         def updateT():
             self.imv.setImage(finalArray[self.verticalScrollBar.sliderPosition()][:, :, self.horizontalScrollBar.sliderPosition()].T, autoRange=False, autoLevels=False)
             if self.ROIexists:
-                roi.setState(roiList[self.horizontalScrollBar.sliderPosition()])
-                update(roi)
+                self.roi.setState(self.roiList[self.horizontalScrollBar.sliderPosition()])
+                update(self.roi)
 
         def preMove():
             if self.ROIexists:
-                roiList[self.horizontalScrollBar.sliderPosition()] = roi.saveState()
+                self.roiList[self.horizontalScrollBar.sliderPosition()] = self.roi.saveState()
 
         self.horizontalScrollBar.sliderMoved.connect(updateT)
         self.horizontalScrollBar.sliderPressed.connect(preMove)
@@ -161,7 +182,7 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
         def updateZ():
             self.imv.setImage(finalArray[self.verticalScrollBar.sliderPosition()][:, :, self.horizontalScrollBar.sliderPosition()].T, autoRange=False, autoLevels=False)
             if self.ROIexists:
-                update(roi)
+                update(self.roi)
 
         self.verticalScrollBar.sliderMoved.connect(updateZ)
 
