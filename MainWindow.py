@@ -64,7 +64,10 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
                 seenTime.append(dc[0x8, 0x32].value)
             masterList.append([temp, dc[0x20, 0x1041].value, dc[0x8, 0x32].value])
 
-        s = sorted(masterList, key=lambda x: (x[1], x[2]))#Sorted by position then by time
+        s = sorted(masterList, key=lambda x: (x[2]))
+        s = sorted(masterList, key=lambda x: (x[1]), reverse=True)#Sorted by position then by time (maybe)
+
+
         nPos = seenPos.__len__()
         nTime = seenTime.__len__()
 
@@ -79,43 +82,48 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
                 ArrayDicom[:, :, t] = ds.pixel_array
             finalArray.append(ArrayDicom)
 
-        #Slider for time
-        self.horizontalScrollBar.setMaximum(nTime-1)
-        def updateT():
-            self.imv.setImage(finalArray[self.verticalScrollBar.sliderPosition()][:, :, self.horizontalScrollBar.sliderPosition()].T, autoRange=False)
 
-        self.horizontalScrollBar.sliderMoved.connect(updateT)
+        #ROI creation
+        def resizeROI():
+            roi.setSize([self.spinBox.value(), self.spinBox.value()])
 
-        #self.imv.setImage(activeArray.transpose((2, 1, 0)))
-        #self.imv.autoRange()
+        self.spinBox.valueChanged.connect(resizeROI)
 
-
-        #Slider for Z axis
-        self.verticalScrollBar.setMaximum(nPos-1)
-
-        def updateZ():
-            self.imv.setImage(finalArray[self.verticalScrollBar.sliderPosition()][:, :, self.horizontalScrollBar.sliderPosition()].T, autoRange=False)
-
-        self.verticalScrollBar.sliderMoved.connect(updateZ)
-
-
-        #Creates the ROI
-        roi = pqg.RectROI([250,250], [150,150])
-        roi.setParentItem(self.imv.getView())
-        #roi.setAngle(-90)
-        #roi.setPos(100,100)
-
-        
-        #Generates second image and output from ROI data
+        roi = pqg.RectROI([0,0], [self.spinBox.value(), self.spinBox.value()])
+        roiList = []
+        self.ROIexists = False
         img2 = pqg.ImageView(self.graphicsView_2)
-        ROIarray = roi.getArrayRegion(finalArray[self.verticalScrollBar.sliderPosition()][:, :, self.horizontalScrollBar.sliderPosition()].T, self.imv.getImageItem())
-        #print(ROIarray)
-        np.fliplr(ROIarray)
-        out += "ROI array:\n" + ROIarray.__str__()
-        #img2.setImage(ROIarray, autoLevels=False, autoRange=False)
-        #img2.setLevels(ROIarray.min(), ROIarray.max())
 
-        
+        def mainClick():
+            roi.setPos(pqg.SignalProxy())
+
+
+        #ROI buttons
+        def createROI():
+            self.ROIexists = True
+            # Creates the ROI list
+            roi.setParentItem(self.imv.getView())
+            # roi.setPos(100,100)
+            roi.sigRegionChanged.connect(update)
+            roi.setPen(200, 50, 0)
+            roi.setPos(150,150)
+            for i in np.arange(0, nTime, 1):
+                roiList.append(roi.saveState())
+            # Generates second image and output from ROI data
+            ROIarray = roi.getArrayRegion(finalArray[self.verticalScrollBar.sliderPosition()][:, :, self.horizontalScrollBar.sliderPosition()].T,self.imv.getImageItem())
+            np.fliplr(ROIarray)
+
+        self.pushButton.clicked.connect(createROI)
+
+        def clearROI():
+            roi.setParentItem(None)
+            roi.setPos(-10000, 0)
+            roi.setSize([self.spinBox.value(), self.spinBox.value()])
+            roiList.clear()
+            self.ROIexists = False
+
+        self.pushButton_2.clicked.connect(clearROI)
+
         def update(roi):
             ROIarray = roi.getArrayRegion(finalArray[self.verticalScrollBar.sliderPosition()][:, :, self.horizontalScrollBar.sliderPosition()].T, self.imv.getImageItem())
             np.fliplr(ROIarray)
@@ -129,21 +137,76 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
             self.textBrowser.clear()
             self.textBrowser.setPlainText(out + updatetext)
 
-        roi.sigRegionChanged.connect(update)
 
 
-        #Slider functionality
+        #Slider for time
+        self.horizontalScrollBar.setMaximum(nTime-1)
+        def updateT():
+            self.imv.setImage(finalArray[self.verticalScrollBar.sliderPosition()][:, :, self.horizontalScrollBar.sliderPosition()].T, autoRange=False, autoLevels=False)
+            if self.ROIexists:
+                roi.setState(roiList[self.horizontalScrollBar.sliderPosition()])
+                update(roi)
+
+        def preMove():
+            if self.ROIexists:
+                roiList[self.horizontalScrollBar.sliderPosition()] = roi.saveState()
+
+        self.horizontalScrollBar.sliderMoved.connect(updateT)
+        self.horizontalScrollBar.sliderPressed.connect(preMove)
+
+
+        #Slider for Z axis
+        self.verticalScrollBar.setMaximum(nPos-1)
+
+        def updateZ():
+            self.imv.setImage(finalArray[self.verticalScrollBar.sliderPosition()][:, :, self.horizontalScrollBar.sliderPosition()].T, autoRange=False, autoLevels=False)
+            if self.ROIexists:
+                update(roi)
+
+        self.verticalScrollBar.sliderMoved.connect(updateZ)
+
+
+        #ROI slider functionality
 
         def updateBot():
-            min = (self.verticalSlider.sliderPosition())-(self.horizontalSlider.sliderPosition()/2)
-            max = (self.verticalSlider.sliderPosition())+(self.horizontalSlider.sliderPosition()/2)
-            img2.setLevels(min, max)
+            min = self.verticalSlider.sliderPosition()-(self.horizontalSlider.sliderPosition()/2)
+            max = self.verticalSlider.sliderPosition()+(self.horizontalSlider.sliderPosition()/2)
+            if self.ROIexists:
+                img2.setLevels(min, max)
 
         self.horizontalSlider.sliderMoved.connect(updateBot)
+        self.horizontalSlider.sliderPressed.connect(updateBot)
+        self.horizontalSlider.sliderReleased.connect(updateBot)
 
         def updateTop():
-            min = (self.verticalSlider.sliderPosition())-(self.horizontalSlider.sliderPosition()/2)
-            max = (self.verticalSlider.sliderPosition())+(self.horizontalSlider.sliderPosition()/2)
-            img2.setLevels(min, max)
+            min = self.verticalSlider.sliderPosition()-(self.horizontalSlider.sliderPosition()/2)
+            max = self.verticalSlider.sliderPosition()+(self.horizontalSlider.sliderPosition()/2)
+            if self.ROIexists:
+                img2.setLevels(min, max)
 
         self.verticalSlider.sliderMoved.connect(updateTop)
+        self.verticalSlider.sliderPressed.connect(updateTop)
+        self.verticalSlider.sliderReleased.connect(updateTop)
+
+
+        #Main window slider functionality
+
+        def updateBottom():
+            min = self.verticalSlider_2.sliderPosition()-(self.horizontalSlider_2.sliderPosition()/2)
+            max = self.verticalSlider_2.sliderPosition()+(self.horizontalSlider_2.sliderPosition()/2)
+            self.imv.setLevels(min, max)
+
+        self.horizontalSlider_2.sliderMoved.connect(updateBottom)
+        self.horizontalSlider_2.sliderPressed.connect(updateBottom)
+        self.horizontalSlider_2.sliderReleased.connect(updateBottom)
+
+        def updateSide():
+            min = self.verticalSlider_2.sliderPosition()-(self.horizontalSlider_2.sliderPosition()/2)
+            max = self.verticalSlider_2.sliderPosition()+(self.horizontalSlider_2.sliderPosition()/2)
+            self.imv.setLevels(min, max)
+
+        self.verticalSlider_2.sliderMoved.connect(updateBottom)
+        self.verticalSlider_2.sliderPressed.connect(updateBottom)
+        self.verticalSlider_2.sliderReleased.connect(updateBottom)
+
+
