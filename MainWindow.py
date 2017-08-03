@@ -45,11 +45,10 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
         #ArrayDicom = np.zeros(ConstPixelDims, dtype=ChestCT.pixel_array.dtype)
         #ArrayDicom[:, :] = ChestCT.pixel_array+ChestCT[0x28,0x1052].value
 
-        # Time functionality
 
         seenPos = []#List to hold possible positions
         seenTime = []#List to hold possible times
-        masterList = []
+        masterList = []#List to hold data in filename, position, time format
 
         for temp in lstFilesDCM:
             dc = dicom.read_file(temp)
@@ -65,11 +64,11 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
                 seenTime.append(dc[0x8, 0x32].value)
             masterList.append([temp, dc[0x20, 0x1041].value, dc[0x8, 0x32].value])
 
-        s = sorted(masterList, key=lambda x: (x[1], x[2]))
+        s = sorted(masterList, key=lambda x: (x[1], x[2]))#Sorted by position then by time
         nPos = seenPos.__len__()
         nTime = seenTime.__len__()
 
-        finalArray = []
+        finalArray = []#List holding all Dicom arrays
         for p in np.arange(0, nPos, 1):
             ArrayDicom = np.zeros(ConstPixelDims, dtype=ChestCT.pixel_array.dtype)
             for t in np.arange(0, nTime, 1):
@@ -80,6 +79,7 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
                 ArrayDicom[:, :, t] = ds.pixel_array
             finalArray.append(ArrayDicom)
 
+        #Slider for time
         self.horizontalScrollBar.setMaximum(nTime-1)
         def updateT():
             self.imv.setImage(finalArray[self.verticalScrollBar.sliderPosition()][:, :, self.horizontalScrollBar.sliderPosition()].T, autoRange=False)
@@ -98,12 +98,12 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
 
         self.verticalScrollBar.sliderMoved.connect(updateZ)
 
+
         #Creates the ROI
         roi = pqg.RectROI([250,250], [150,150])
         roi.setParentItem(self.imv.getView())
         #roi.setAngle(-90)
         #roi.setPos(100,100)
-
 
         
         #Generates second image and output from ROI data
@@ -129,9 +129,7 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
             self.textBrowser.clear()
             self.textBrowser.setPlainText(out + updatetext)
 
-
         roi.sigRegionChanged.connect(update)
-
 
 
         #Slider functionality
