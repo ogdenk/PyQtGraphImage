@@ -8,6 +8,7 @@ import dicom
 import numpy as np
 
 class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
+
     def __init__(self, parent=None):
         super(PyQtGraphImageMain, self).__init__(parent)
         pqg.setConfigOption('background', '#f0f0f0')
@@ -23,8 +24,9 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
         for dirName, subdirList, fileList in os.walk(PathDicom):
             for filename in fileList:
                 if ".dcm" in filename.lower():  # check whether the file's DICOM
-                    if (dicom.read_file(os.path.join(dirName, filename))[0x18, 0x1030].value) == "Face Child  8-18 yrs  (Volume)":
+                    if (dicom.read_file(os.path.join(dirName, filename))[0x18, 0x1030].value) == "PE Circ Time":
                         lstFilesDCM.append(os.path.join(dirName, filename))
+
 
         ChestCT = dicom.read_file(lstFilesDCM[0])
 
@@ -39,27 +41,62 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
         #print(ChestCT.pixel_array.dtype)
         out += "Pixel Dimentions: " + ConstPixelDims.__str__() + '\n' + "Pixel Spacing: " + ConstPixelSpacing.__str__() + '\n'
 
-        ArrayDicom = np.zeros(ConstPixelDims, dtype=ChestCT.pixel_array.dtype)
+
+        #ArrayDicom = np.zeros(ConstPixelDims, dtype=ChestCT.pixel_array.dtype)
         #ArrayDicom[:, :] = ChestCT.pixel_array+ChestCT[0x28,0x1052].value
 
-        for filenameDCM in lstFilesDCM:
-            # read the file
-            ds = dicom.read_file(filenameDCM)
-            # store the raw image data
-            ArrayDicom[:, :, lstFilesDCM.index(filenameDCM)] = ds.pixel_array
+        # Time functionality
 
-        self.imv.setImage(ArrayDicom.transpose((2, 1, 0)))
+        seenPos = []#List to hold possible positions
+        seenTime = []#List to hold possible times
+        masterList = []
+
+        for temp in lstFilesDCM:
+            dc = dicom.read_file(temp)
+
+            if seenPos.__contains__(dc[0x20, 0x1041].value):
+                pass
+            else:
+                seenPos.append(dc[0x20, 0x1041].value)
+
+            if seenTime.__contains__(dc[0x8, 0x32].value):
+                pass
+            else:
+                seenTime.append(dc[0x8, 0x32].value)
+            masterList.append([temp, dc[0x20, 0x1041].value, dc[0x8, 0x32].value])
+
+        s = sorted(masterList, key=lambda x: (x[1], x[2]))
+        nPos = seenPos.__len__()
+        nTime = seenTime.__len__()
+
+        finalArray = []
+        for p in np.arange(0, nPos, 1):
+            ArrayDicom = np.zeros(ConstPixelDims, dtype=ChestCT.pixel_array.dtype)
+            for t in np.arange(0, nTime, 1):
+                fileDCM = s[t+p*nTime][0]
+                # read the file
+                ds = dicom.read_file(fileDCM)
+                # store the raw image data
+                ArrayDicom[:, :, t] = ds.pixel_array
+            finalArray.append(ArrayDicom)
+
+        self.horizontalScrollBar.setMaximum(nTime-1)
+        def updateT():
+            self.imv.setImage(finalArray[self.verticalScrollBar.sliderPosition()][:, :, self.horizontalScrollBar.sliderPosition()].T, autoRange=False)
+
+        self.horizontalScrollBar.sliderMoved.connect(updateT)
+
+        #self.imv.setImage(activeArray.transpose((2, 1, 0)))
         #self.imv.autoRange()
 
 
         #Slider for Z axis
-        self.horizontalScrollBar.setMaximum(len(lstFilesDCM)-1)
+        self.verticalScrollBar.setMaximum(nPos-1)
 
         def updateZ():
-            self.imv.setImage(ArrayDicom[:, :, self.horizontalScrollBar.sliderPosition()])
+            self.imv.setImage(finalArray[self.verticalScrollBar.sliderPosition()][:, :, self.horizontalScrollBar.sliderPosition()].T, autoRange=False)
 
-        self.horizontalScrollBar.sliderMoved.connect(updateZ)
-
+        self.verticalScrollBar.sliderMoved.connect(updateZ)
 
         #Creates the ROI
         roi = pqg.RectROI([250,250], [150,150])
@@ -71,18 +108,18 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
         
         #Generates second image and output from ROI data
         img2 = pqg.ImageView(self.graphicsView_2)
-        ROIarray = roi.getArrayRegion(ArrayDicom.transpose(0, 2, 1), self.imv.getImageItem())
+        ROIarray = roi.getArrayRegion(finalArray[self.verticalScrollBar.sliderPosition()][:, :, self.horizontalScrollBar.sliderPosition()].T, self.imv.getImageItem())
         #print(ROIarray)
         np.fliplr(ROIarray)
         out += "ROI array:\n" + ROIarray.__str__()
-        img2.setImage(ROIarray, autoLevels=False, autoRange=False)
-        img2.setLevels(ROIarray.min(), ROIarray.max())
+        #img2.setImage(ROIarray, autoLevels=False, autoRange=False)
+        #img2.setLevels(ROIarray.min(), ROIarray.max())
 
-        '''
+        
         def update(roi):
-            ROIarray = roi.getArrayRegion(ArrayDicom.transpose((1, 0, 2)), self.imv.getImageItem())
+            ROIarray = roi.getArrayRegion(finalArray[self.verticalScrollBar.sliderPosition()][:, :, self.horizontalScrollBar.sliderPosition()].T, self.imv.getImageItem())
             np.fliplr(ROIarray)
-            img2.setImage(ROIarray, autoRange=False, autoLevels=False, scale=[0.5, 0.5])
+            img2.setImage(ROIarray, autoRange=False, autoLevels=False)
             #print(ROIarray)
             #print(ROIarray.mean())
             #print(ROIarray.max())
@@ -112,4 +149,3 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
             img2.setLevels(min, max)
 
         self.verticalSlider.sliderMoved.connect(updateTop)
-        '''

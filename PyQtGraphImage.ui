@@ -27,7 +27,7 @@
    <widget class="QGraphicsView" name="graphicsView_2">
     <property name="geometry">
      <rect>
-      <x>660</x>
+      <x>670</x>
       <y>100</y>
       <width>261</width>
       <height>261</height>
@@ -50,7 +50,7 @@
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>670</x>
+      <x>680</x>
       <y>70</y>
       <width>71</width>
       <height>16</height>
@@ -63,7 +63,7 @@
    <widget class="QLabel" name="label_3">
     <property name="geometry">
      <rect>
-      <x>670</x>
+      <x>680</x>
       <y>440</y>
       <width>60</width>
       <height>16</height>
@@ -76,7 +76,7 @@
    <widget class="QTextBrowser" name="textBrowser">
     <property name="geometry">
      <rect>
-      <x>660</x>
+      <x>670</x>
       <y>470</y>
       <width>256</width>
       <height>141</height>
@@ -95,8 +95,8 @@
    <widget class="QSlider" name="horizontalSlider">
     <property name="geometry">
      <rect>
-      <x>660</x>
-      <y>390</y>
+      <x>670</x>
+      <y>380</y>
       <width>261</width>
       <height>19</height>
      </rect>
@@ -144,6 +144,19 @@
     </property>
     <property name="orientation">
      <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="QScrollBar" name="verticalScrollBar">
+    <property name="geometry">
+     <rect>
+      <x>600</x>
+      <y>100</y>
+      <width>16</width>
+      <height>511</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Vertical</enum>
     </property>
    </widget>
   </widget>
