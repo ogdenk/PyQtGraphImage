@@ -15,6 +15,7 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
         pqg.setConfigOption('foreground', '#2d3142')
         pqg.mkPen(color=(0, 97, 255))
         self.setupUi(self)
+        self.setMouseTracking(True)
 
         self.imv = pqg.ImageView(parent=self.graphicsView)
         #self.imv.show()
@@ -89,26 +90,23 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
         self.ROIexists = False
         img2 = pqg.ImageView(self.graphicsView_2)
 
-        #Handling of clicking on main image for creation of ROI
-        def mainClick():
-            self.roi.setPos(pqg.SignalProxy())
-
 
         #ROI buttons
         #Creates the ROI by linking the roi to the image
         def createROI():
-            self.ROIexists = True
-            # Creates the ROI list
-            self.roi.setParentItem(self.imv.getView())
-            # roi.setPos(100,100)
-            self.roi.sigRegionChanged.connect(update)
-            self.roi.setPen(200, 50, 0)
-            self.roi.setPos(int(self.plainTextEdit.toPlainText()), int(self.plainTextEdit_2.toPlainText()))
-            for i in np.arange(0, nTime, 1):
-                self.roiList.append(self.roi.saveState())
-            # Generates second image and output from ROI data
-            ROIarray = self.roi.getArrayRegion(finalArray[self.verticalScrollBar.sliderPosition()][:, :, self.horizontalScrollBar.sliderPosition()].T,self.imv.getImageItem())
-            np.fliplr(ROIarray)
+            if self.ROIexists == False:
+                self.ROIexists = True
+                # Creates the ROI list
+                self.roi.setParentItem(self.imv.getView())
+                # roi.setPos(100,100)
+                self.roi.sigRegionChanged.connect(update)
+                self.roi.setPen(200, 50, 0)
+                self.roi.setPos(float(self.plainTextEdit.toPlainText()), float(self.plainTextEdit_2.toPlainText()))
+                for i in np.arange(0, nTime, 1):
+                    self.roiList.append(self.roi.saveState())
+                # Generates second image and output from ROI data
+                ROIarray = self.roi.getArrayRegion(finalArray[self.verticalScrollBar.sliderPosition()][:, :, self.horizontalScrollBar.sliderPosition()].T,self.imv.getImageItem())
+                np.fliplr(ROIarray)
 
         self.pushButton.clicked.connect(createROI)
 
@@ -227,11 +225,10 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
         self.verticalSlider_2.sliderPressed.connect(updateBottom)
         self.verticalSlider_2.sliderReleased.connect(updateBottom)
 
-        '''
-        def doubleClick(evt):
-            mousePoint = p.vb.mapSceneToView(evt[0])
-            self.plainTextEdit.setPlainText(mousePoint.x())
-            self.plainTextEdit_2.setPlainText(mousePoint.y())
-
-        pqg.SignalProxy(self.scen, rateLimit=60, slot=doubleClick)
-        '''
+    #Changes the double click to set the coordinates to create an ROI
+    def mouseDoubleClickEvent(self, a0: QtGui.QMouseEvent):
+        x = a0.x()
+        y = a0.y()
+        print(x, y)
+        self.plainTextEdit.setPlainText(((x-70)-self.spinBox.value()/2).__str__())
+        self.plainTextEdit_2.setPlainText(((y-70)-self.spinBox.value()/2).__str__())
