@@ -17,8 +17,8 @@
    <widget class="PlotWidget" name="graphicsView">
     <property name="geometry">
      <rect>
-      <x>60</x>
-      <y>100</y>
+      <x>70</x>
+      <y>70</y>
       <width>512</width>
       <height>512</height>
      </rect>
@@ -27,8 +27,8 @@
    <widget class="QGraphicsView" name="graphicsView_2">
     <property name="geometry">
      <rect>
-      <x>680</x>
-      <y>100</y>
+      <x>690</x>
+      <y>70</y>
       <width>261</width>
       <height>261</height>
      </rect>
@@ -37,8 +37,8 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>70</x>
-      <y>70</y>
+      <x>80</x>
+      <y>40</y>
       <width>81</width>
       <height>16</height>
      </rect>
@@ -50,8 +50,8 @@
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>690</x>
-      <y>70</y>
+      <x>700</x>
+      <y>40</y>
       <width>71</width>
       <height>16</height>
      </rect>
@@ -63,8 +63,8 @@
    <widget class="QLabel" name="label_3">
     <property name="geometry">
      <rect>
-      <x>690</x>
-      <y>440</y>
+      <x>700</x>
+      <y>410</y>
       <width>60</width>
       <height>16</height>
      </rect>
@@ -76,8 +76,8 @@
    <widget class="QTextBrowser" name="textBrowser">
     <property name="geometry">
      <rect>
-      <x>680</x>
-      <y>470</y>
+      <x>690</x>
+      <y>440</y>
       <width>256</width>
       <height>141</height>
      </rect>
@@ -95,8 +95,8 @@
    <widget class="QSlider" name="horizontalSlider">
     <property name="geometry">
      <rect>
-      <x>680</x>
-      <y>380</y>
+      <x>690</x>
+      <y>350</y>
       <width>261</width>
       <height>19</height>
      </rect>
@@ -114,8 +114,8 @@
    <widget class="QSlider" name="verticalSlider">
     <property name="geometry">
      <rect>
-      <x>960</x>
-      <y>100</y>
+      <x>970</x>
+      <y>70</y>
       <width>19</width>
       <height>261</height>
      </rect>
@@ -133,8 +133,8 @@
    <widget class="QScrollBar" name="horizontalScrollBar">
     <property name="geometry">
      <rect>
-      <x>60</x>
-      <y>640</y>
+      <x>70</x>
+      <y>610</y>
       <width>511</width>
       <height>16</height>
      </rect>
@@ -149,8 +149,8 @@
    <widget class="QScrollBar" name="verticalScrollBar">
     <property name="geometry">
      <rect>
-      <x>600</x>
-      <y>100</y>
+      <x>610</x>
+      <y>70</y>
       <width>16</width>
       <height>511</height>
      </rect>
@@ -162,8 +162,8 @@
    <widget class="QSlider" name="horizontalSlider_2">
     <property name="geometry">
      <rect>
-      <x>60</x>
-      <y>670</y>
+      <x>70</x>
+      <y>640</y>
       <width>511</width>
       <height>22</height>
      </rect>
@@ -181,8 +181,8 @@
    <widget class="QSlider" name="verticalSlider_2">
     <property name="geometry">
      <rect>
-      <x>630</x>
-      <y>99</y>
+      <x>640</x>
+      <y>69</y>
       <width>22</width>
       <height>511</height>
      </rect>
@@ -200,8 +200,8 @@
    <widget class="QPushButton" name="pushButton">
     <property name="geometry">
      <rect>
-      <x>610</x>
-      <y>650</y>
+      <x>620</x>
+      <y>620</y>
       <width>91</width>
       <height>32</height>
      </rect>
@@ -213,8 +213,8 @@
    <widget class="QPushButton" name="pushButton_2">
     <property name="geometry">
      <rect>
-      <x>700</x>
-      <y>650</y>
+      <x>710</x>
+      <y>620</y>
       <width>91</width>
       <height>32</height>
      </rect>
@@ -226,8 +226,8 @@
    <widget class="QSpinBox" name="spinBox">
     <property name="geometry">
      <rect>
-      <x>800</x>
-      <y>650</y>
+      <x>810</x>
+      <y>620</y>
       <width>51</width>
       <height>24</height>
      </rect>
@@ -242,8 +242,8 @@
    <widget class="QLabel" name="label_4">
     <property name="geometry">
      <rect>
-      <x>800</x>
-      <y>630</y>
+      <x>810</x>
+      <y>600</y>
       <width>60</width>
       <height>16</height>
      </rect>
@@ -255,8 +255,8 @@
    <widget class="QPushButton" name="pushButton_3">
     <property name="geometry">
      <rect>
-      <x>610</x>
-      <y>680</y>
+      <x>810</x>
+      <y>650</y>
       <width>141</width>
       <height>32</height>
      </rect>
@@ -268,8 +268,8 @@
    <widget class="QPushButton" name="pushButton_4">
     <property name="geometry">
      <rect>
-      <x>750</x>
-      <y>680</y>
+      <x>950</x>
+      <y>650</y>
       <width>101</width>
       <height>32</height>
      </rect>
@@ -281,8 +281,8 @@
    <widget class="QTextBrowser" name="textBrowser_2">
     <property name="geometry">
      <rect>
-      <x>620</x>
-      <y>720</y>
+      <x>820</x>
+      <y>690</y>
       <width>121</width>
       <height>21</height>
      </rect>
@@ -291,10 +291,69 @@
    <widget class="QTextBrowser" name="textBrowser_3">
     <property name="geometry">
      <rect>
-      <x>760</x>
-      <y>720</y>
+      <x>960</x>
+      <y>690</y>
       <width>81</width>
       <height>21</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_5">
+    <property name="geometry">
+     <rect>
+      <x>630</x>
+      <y>660</y>
+      <width>171</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Coordinates of ROI creation</string>
+    </property>
+   </widget>
+   <widget class="QPlainTextEdit" name="plainTextEdit">
+    <property name="geometry">
+     <rect>
+      <x>630</x>
+      <y>680</y>
+      <width>71</width>
+      <height>31</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_6">
+    <property name="geometry">
+     <rect>
+      <x>610</x>
+      <y>690</y>
+      <width>16</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>x:</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_7">
+    <property name="geometry">
+     <rect>
+      <x>710</x>
+      <y>690</y>
+      <width>16</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>y:</string>
+    </property>
+   </widget>
+   <widget class="QPlainTextEdit" name="plainTextEdit_2">
+    <property name="geometry">
+     <rect>
+      <x>730</x>
+      <y>680</y>
+      <width>71</width>
+      <height>31</height>
      </rect>
     </property>
    </widget>

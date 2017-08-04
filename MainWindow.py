@@ -27,23 +27,14 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
                     if (dicom.read_file(os.path.join(dirName, filename))[0x18, 0x1030].value) == "PE Circ Time":
                         lstFilesDCM.append(os.path.join(dirName, filename))
 
-
         ChestCT = dicom.read_file(lstFilesDCM[0])
-
 
         #print("rescale intercept \n")
         #print(ChestCT[0x28,0x1052].value)
         ConstPixelDims = (int(ChestCT.Rows), int(ChestCT.Columns), len(lstFilesDCM))
         ConstPixelSpacing = (float(ChestCT.PixelSpacing[0]), float(ChestCT.PixelSpacing[1]), float(ChestCT.SliceThickness))
         out = ""
-        #print(ConstPixelDims)
-        #print(ConstPixelSpacing)
-        #print(ChestCT.pixel_array.dtype)
         out += "Pixel Dimentions: " + ConstPixelDims.__str__() + '\n' + "Pixel Spacing: " + ConstPixelSpacing.__str__() + '\n'
-
-
-        #ArrayDicom = np.zeros(ConstPixelDims, dtype=ChestCT.pixel_array.dtype)
-        #ArrayDicom[:, :] = ChestCT.pixel_array+ChestCT[0x28,0x1052].value
 
 
         seenPos = []#List to hold possible positions
@@ -84,6 +75,10 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
 
 
         #ROI creation
+        #Coordinate Boxes
+        self.plainTextEdit.setPlainText("200")
+        self.plainTextEdit_2.setPlainText("200")
+        #Changes ROI based on GUI inputs
         def resizeROI():
             self.roi.setSize([self.spinBox.value(), self.spinBox.value()])
 
@@ -94,11 +89,13 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
         self.ROIexists = False
         img2 = pqg.ImageView(self.graphicsView_2)
 
+        #Handling of clicking on main image for creation of ROI
         def mainClick():
             self.roi.setPos(pqg.SignalProxy())
 
 
         #ROI buttons
+        #Creates the ROI by linking the roi to the image
         def createROI():
             self.ROIexists = True
             # Creates the ROI list
@@ -106,7 +103,7 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
             # roi.setPos(100,100)
             self.roi.sigRegionChanged.connect(update)
             self.roi.setPen(200, 50, 0)
-            self.roi.setPos(150,150)
+            self.roi.setPos(int(self.plainTextEdit.toPlainText()), int(self.plainTextEdit_2.toPlainText()))
             for i in np.arange(0, nTime, 1):
                 self.roiList.append(self.roi.saveState())
             # Generates second image and output from ROI data
@@ -115,6 +112,7 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
 
         self.pushButton.clicked.connect(createROI)
 
+        #Hides the by removing the link to the image and moving it out of frame
         def clearROI():
             self.roi.setParentItem(None)
             self.roi.setPos(-10000, 0)
@@ -124,19 +122,17 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
 
         self.pushButton_2.clicked.connect(clearROI)
 
+        #Changes data based on moving of ROI as it happens
         def update(roi):
             ROIarray = roi.getArrayRegion(finalArray[self.verticalScrollBar.sliderPosition()][:, :, self.horizontalScrollBar.sliderPosition()].T, self.imv.getImageItem())
             np.fliplr(ROIarray)
             img2.setImage(ROIarray, autoRange=False, autoLevels=False)
-            #print(ROIarray)
-            #print(ROIarray.mean())
-            #print(ROIarray.max())
-            #print(ROIarray.min())
             updatetext = ''
             updatetext += ROIarray.__str__() + "\nMean:\n" + ROIarray.mean().__str__() + "\nMax:\n" + ROIarray.max().__str__() + "\nMin:\n" + ROIarray.min().__str__()
             self.textBrowser.clear()
             self.textBrowser.setPlainText(out + updatetext)
 
+        #Finds the mean of the data within each of the ROIs
         def collectMeans():
             mean = 0
             meanlst = []
@@ -168,6 +164,7 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
                 self.roi.setState(self.roiList[self.horizontalScrollBar.sliderPosition()])
                 update(self.roi)
 
+        #Saves current ROI state when the time is about to be changed
         def preMove():
             if self.ROIexists:
                 self.roiList[self.horizontalScrollBar.sliderPosition()] = self.roi.saveState()
@@ -178,7 +175,6 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
 
         #Slider for Z axis
         self.verticalScrollBar.setMaximum(nPos-1)
-
         def updateZ():
             self.imv.setImage(finalArray[self.verticalScrollBar.sliderPosition()][:, :, self.horizontalScrollBar.sliderPosition()].T, autoRange=False, autoLevels=False)
             if self.ROIexists:
@@ -188,7 +184,7 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
 
 
         #ROI slider functionality
-
+        #Changes range
         def updateBot():
             min = self.verticalSlider.sliderPosition()-(self.horizontalSlider.sliderPosition()/2)
             max = self.verticalSlider.sliderPosition()+(self.horizontalSlider.sliderPosition()/2)
@@ -199,6 +195,7 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
         self.horizontalSlider.sliderPressed.connect(updateBot)
         self.horizontalSlider.sliderReleased.connect(updateBot)
 
+        #Changes level
         def updateTop():
             min = self.verticalSlider.sliderPosition()-(self.horizontalSlider.sliderPosition()/2)
             max = self.verticalSlider.sliderPosition()+(self.horizontalSlider.sliderPosition()/2)
@@ -211,7 +208,7 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
 
 
         #Main window slider functionality
-
+        #Each functions the same as their ROI display counterparts
         def updateBottom():
             min = self.verticalSlider_2.sliderPosition()-(self.horizontalSlider_2.sliderPosition()/2)
             max = self.verticalSlider_2.sliderPosition()+(self.horizontalSlider_2.sliderPosition()/2)
@@ -230,4 +227,11 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
         self.verticalSlider_2.sliderPressed.connect(updateBottom)
         self.verticalSlider_2.sliderReleased.connect(updateBottom)
 
+        '''
+        def doubleClick(evt):
+            mousePoint = p.vb.mapSceneToView(evt[0])
+            self.plainTextEdit.setPlainText(mousePoint.x())
+            self.plainTextEdit_2.setPlainText(mousePoint.y())
 
+        pqg.SignalProxy(self.scen, rateLimit=60, slot=doubleClick)
+        '''
