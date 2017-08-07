@@ -112,11 +112,18 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
 
         #Hides the by removing the link to the image and moving it out of frame
         def clearROI():
-            self.roi.setParentItem(None)
-            self.roi.setPos(-10000, 0)
-            self.roi.setSize([self.spinBox.value(), self.spinBox.value()])
-            self.roiList.clear()
-            self.ROIexists = False
+            if self.ROIexists:
+                self.roi.setParentItem(None)
+                self.roi.setPos(-10000, 0)
+                self.roi.setSize([self.spinBox.value(), self.spinBox.value()])
+                self.roiList.clear()
+                self.ROIexists = False
+            if self.BASEexists:
+                self.BASEroi.setParentItem(None)
+                self.BASEroi.setPos(-10000, 0)
+                self.BASEroi.setSize([self.spinBox.value(), self.spinBox.value()])
+                self.BASEroiSAVE.clear()
+                self.BASEexists = False
 
         self.pushButton_2.clicked.connect(clearROI)
 
@@ -134,6 +141,8 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
         def collectMeans():
             mean = 0
             meanlst = []
+            if self.BASEexists:
+                tempBASE = self.BASEroi.saveState()
             if self.ROIexists:
                 update(self.roi)
                 preMove()
@@ -143,15 +152,40 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
                 for i in np.arange(0, nTime, 1):
                     self.imv.setImage(finalArray[self.verticalScrollBar.sliderPosition()][:, :, i].T, autoRange=False, autoLevels=False)
                     self.roi.setState(self.roiList[i])
+                    if self.BASEexists and i == 0:
+                        self.BASEroi.setState(self.BASEroiSAVE)
+                        print(self.BASEroi.getArrayRegion(finalArray[self.verticalScrollBar.sliderPosition()][:, :, 0].T, self.imv.getImageItem()).mean())
+                    else:
+                        self.BASEroi.setPos(-100000,100000)
                     mean += self.roi.getArrayRegion(finalArray[self.verticalScrollBar.sliderPosition()][:, :, i].T, self.imv.getImageItem()).mean()
                     meanlst.append(self.roi.getArrayRegion(finalArray[self.verticalScrollBar.sliderPosition()][:, :, i].T, self.imv.getImageItem()).mean())
                 print(meanlst)
                 mean = mean/nTime
+                if self.BASEexists:
+                    self.BASEroi.setState(tempBASE)
                 self.textBrowser_2.setText(mean.__str__())
                 self.roi.setState(tempState)
                 self.imv.setImage(finalArray[self.verticalScrollBar.sliderPosition()][:, :, tempPlace].T, autoRange=False,autoLevels=False)
 
+
         self.pushButton_3.clicked.connect(collectMeans)
+
+
+        #Creation of Baseline ROI
+        self.BASEroi = pqg.RectROI([0,0], [self.spinBox.value(), self.spinBox.value()])
+        self.BASEroiSAVE = self.BASEroi.saveState()
+        self.BASEexists = False
+
+        def setBaseLine():
+            if self.BASEexists == False:
+                self.BASEexists = True
+                self.BASEroi.setParentItem(self.imv.getView())
+                self.BASEroi.setPen(0, 200, 100)
+                self.BASEroi.setSize(self.spinBox.value(), self.spinBox.value())
+                self.BASEroi.setPos(float(self.plainTextEdit.toPlainText()), float(self.plainTextEdit_2.toPlainText()))
+                self.BASEroiSAVE = self.BASEroi.saveState()
+
+        self.pushButton_4.clicked.connect(setBaseLine)
 
 
         #Slider for time
@@ -161,11 +195,19 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
             if self.ROIexists:
                 self.roi.setState(self.roiList[self.horizontalScrollBar.sliderPosition()])
                 update(self.roi)
+            if self.BASEexists:
+                if self.horizontalScrollBar.sliderPosition()==0:
+                    self.BASEroi.setState(self.BASEroiSAVE)
+                else:
+                    self.BASEroi.setPos(-1000000,0)
 
         #Saves current ROI state when the time is about to be changed
         def preMove():
             if self.ROIexists:
                 self.roiList[self.horizontalScrollBar.sliderPosition()] = self.roi.saveState()
+            if self.BASEexists:
+                if self.horizontalScrollBar.sliderPosition() == 0:
+                    self.BASEroiSAVE = self.BASEroi.saveState()
 
         self.horizontalScrollBar.sliderMoved.connect(updateT)
         self.horizontalScrollBar.sliderPressed.connect(preMove)
