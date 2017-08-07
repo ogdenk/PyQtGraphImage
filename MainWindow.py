@@ -170,7 +170,6 @@ class PyQtGraphImageMain(QMainWindow, ui_PyQtGraphImage.Ui_MainWindow):
 
         self.pushButton_3.clicked.connect(collectMeans)
 
-
         #Creation of Baseline ROI
         self.BASEroi = pqg.RectROI([0,0], [self.spinBox.value(), self.spinBox.value()])
         self.BASEroiSAVE = self.BASEroi.saveState()
